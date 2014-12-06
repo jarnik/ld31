@@ -128,7 +128,8 @@ class Tile
 			}
 			case (TileType.Server):
 			{
-				_fgSprite = new AnimatedSprite("img/server.png");
+				_fgSprite = new AnimatedSprite("img/server.png", { w: 16, h: 16 } );
+				_fgSprite.start(1000);
 			}
 			case (TileType.Workstation):
 			{

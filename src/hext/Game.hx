@@ -95,6 +95,9 @@ class Tile
 		_updateTimer.addEventListener(TimerEvent.TIMER, onUpdateTimer);
 		_position = position;
 		
+		_online = true;
+		_broken = false;
+		
 	    _masterSprite = new Sprite();
 		_masterSprite.x = _position.col * Game._TILE_SIZE;
 		_masterSprite.y = _position.row * Game._TILE_SIZE;
@@ -229,11 +232,59 @@ class Tile
 	private function workstationUpdate()
 	{
 		maybeBreak();
+	    if (_broken)
+		{
+			return;
+		}
+		if (_corruption == 0)
+		{
+			if (Math.random() < 0.1)
+			{
+				_corruption = 10;
+				return;
+			}
+		}
+		if (_corruption < 100)
+		{
+			_corruption += 5;
+		}
+		if (_corruption >= 100 && _server._online)
+		{
+			if (_server._corruption == 0)
+			{
+				if (Math.random() < 0.1)
+				{
+					_server._corruption = 2;
+				}
+			}
+			else if (_server._corruption < 100)
+			{
+				_server._corruption += 2;
+			}
+		}
 	}
 	
 	private function serverUpdate()
 	{
-		maybeBreak();
+		if (!_online)
+		{
+			return;
+		}
+		if (_corruption > 0 && _corruption < 100)
+		{
+			_corruption += 2;
+		}
+		if (_corruption >= 100)
+		{
+			var workstations = Main.game.findWorkstations(_group);
+			for (i in 0 ... workstations.length)
+			{
+				if (!workstations[i]._broken && workstations[i]._corruption < 100)
+				{
+					workstations[i]._corruption += 5;
+				}
+			}
+		}
 	}
 	
 	private function userUpdate()
@@ -243,7 +294,7 @@ class Tile
 		{
 			return;
 		}
-		if (workstation._broken || workstation._corruption >= 100)
+		if (workstation._broken || workstation._corruption >= 100 || !workstation._server._online)
 		{
 			_anger += 10;
 			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3");
@@ -271,11 +322,7 @@ class Tile
 	{
 		if (_corruption < 100 && !_broken)
 		{
-			if (_type == TileType.Workstation && Math.random() < 0.1)
-			{
-				_broken = true;
-			}
-			else if (_type == TileType.Server && Math.random() < 0.02)
+			if (Math.random() < 0.1)
 			{
 				_broken = true;
 			}
@@ -289,7 +336,7 @@ class Tile
 		{
 			
 		}
-		// state: normal (<100 corruption), infected (100 corruption)
+		// state: offline, normal (<100 corruption), infected (100 corruption)
 		else if (_type == TileType.Server)
 		{
 			
@@ -300,6 +347,7 @@ class Tile
 	private var _passable: Bool;
 	private var _position: Position;
 	
+	private var _online: Bool; // server
 	private var _group: Int; // workstation/server
 	private var _server: Tile; // workstation only
 	private var _broken: Bool; // workstation only
@@ -421,9 +469,10 @@ class Game
 			}
 		}
 		
-		for (i in 0 ... 4)
+		for (i in 1 ... 5)
 		{
 			var server = findServer(i);
+			trace("i:" + server);
 			var workstations = findWorkstations(i);
 			for (j in 0 ... workstations.length)
 			{

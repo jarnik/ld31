@@ -1,5 +1,6 @@
 package hext;
 
+import hext.Game.Tile;
 import openfl.Lib;
 import openfl.Assets;
 
@@ -90,7 +91,10 @@ class Tile
 {
 	public function new(type: TileType, position: Position)
 	{
+		_updateTimer = new Timer(500);
+		_updateTimer.addEventListener(TimerEvent.TIMER, onUpdateTimer);
 		_position = position;
+		loadBgSprite();
 		setType(type);
 	}
 	
@@ -110,27 +114,36 @@ class Tile
 	{
 		if (_fgSprite != null)
 		{
-			_bgSprite.removeChildren();
+            _bgSprite.removeChild(_fgSprite);
+			_fgSprite = null;
+			// _bgSprite.removeChildren();
 		}
 		
 		switch (_type)
 		{
 			case (TileType.Wall):
 			{
+				_updateTimer.stop();
 				_fgSprite = new AnimatedSprite("img/wall.png");
 			}
 			case (TileType.Server):
 			{
+				_corruption = 0;
 				_fgSprite = new AnimatedSprite("img/server.png", { w: 16, h: 16 } );
 				_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
 				_fgSprite.start(500 + Math.random() * 1000);
+				_updateTimer.start();
 			}
 			case (TileType.Workstation):
 			{
+				_broken = false;
+				_corruption = 0;
 				_fgSprite = new AnimatedSprite("img/workstation.png");
+				_updateTimer.start();
 			}
 			case (TileType.User):
 			{
+				_anger = 0;
 				if (Math.random() < 0.5)
 				{
 					_fgSprite = new AnimatedSprite("img/user_girl.png");
@@ -139,13 +152,14 @@ class Tile
 				{
 					_fgSprite = new AnimatedSprite("img/user_boy.png");
 				}
+				_updateTimer.start();
 			}
 			default:
 			{
+				_updateTimer.stop();
 				_fgSprite = null;
 			}
 		}
-		
 		if (_fgSprite != null)
 		{
 			_bgSprite.addChild(_fgSprite);
@@ -156,8 +170,12 @@ class Tile
 	{
 		_type = type;
 		_passable = _type == TileType.Floor;
-		loadBgSprite();
 		loadFgSprite();
+	}
+	
+	public function getType() : TileType
+	{
+		return _type;
 	}
 	
 	public function getBgSprite() : AnimatedSprite
@@ -175,9 +193,61 @@ class Tile
 		return _passable;
 	}
 	
+	private function onUpdateTimer(event: TimerEvent)
+	{
+		switch (_type)
+		{
+			case TileType.Workstation: workstationUpdate();
+			case TileType.Server: serverUpdate();
+			case TileType.User: userUpdate();
+			default: {};
+		}
+	}
+	
+	private function workstationUpdate()
+	{
+		
+	}
+	
+	private function serverUpdate()
+	{
+		
+	}
+	
+	private function userUpdate()
+	{
+		var workstation = Main.game.getNearestWorkstation(_position);
+		if (workstation == null)
+		{
+			return;
+		}
+		if (true || workstation._broken || workstation._corruption >= 100)
+		{
+			_anger += 10;
+			if (_anger > 100)
+			{
+				setType(TileType.Floor);
+				// SfxEngine.play("snd/npc_reached_anger_and_left.mp3");
+			}
+		}
+		else
+		{
+			_anger -= 10;
+			if (_anger < 0)
+			{
+				_anger = 0;
+			}
+		}
+	}
+	
 	private var _type: TileType;
 	private var _passable: Bool;
 	private var _position: Position;
+	
+	private var _broken: Bool; // workstation only
+	private var _corruption: Int; // workstation/server
+	private var _anger: Int; // user only
+    private var _updateTimer: Timer; // workstation/server/user update; 0.5s
 	
 	private var _bgSprite: AnimatedSprite;
 	private var _fgSprite: AnimatedSprite;
@@ -317,6 +387,28 @@ class Game
 		}
 	}
 	
+	public function getNearestWorkstation(position: Position) : Tile
+	{
+		var tile: Tile = null;
+		var distance: Int = 1000;
+		for (r in 0 ... _tiles.length)
+		{
+			for (c in 0 ... _tiles[r].length)
+			{
+				if (_tiles[r][c].getType() == TileType.Workstation)
+				{
+					var d = Math.floor(Math.abs(position.row - r) + Math.abs(position.col - c));
+					if (d < distance)
+					{
+						tile = _tiles[r][c];
+						distance = d;
+					}
+				}
+			}
+		}
+		return tile;
+	}
+	
 	public function getTile(position: Position) : Tile
 	{
 		if (position.row < 0 || position.row >= Game._ROWS
@@ -353,6 +445,8 @@ class Game
 			{
 				_string = _string.substr(0, _string.length - 2) + "_";
 				_commandLine.setContent(_string);
+				SfxEngine.play("snd/pc_keypress.mp3", false, 0.01);
+				
 			}
 			return;
 		}
@@ -360,6 +454,7 @@ class Game
 		_string = _string.substr(0, _string.length - 1);
 		_string += String.fromCharCode(charCode) + "_";
 		_commandLine.setContent(_string);
+		SfxEngine.play("snd/pc_keypress.mp3", false, 0.01);
 	}
 	
 	public function onMovementTimer(event: TimerEvent)

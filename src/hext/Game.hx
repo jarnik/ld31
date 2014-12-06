@@ -224,6 +224,10 @@ class Game
 		
 		_scene.addChild(_commandLine = new CommandLine());
 		_commandLine.setContent("START TYPING!!!");
+
+		_scene.addChild(_helpLine = new CommandLine( false ));
+		_helpLine.setVisible(true);
+		_helpLine.setContent("HELP!!!");
 		
 
 		/*
@@ -393,5 +397,6 @@ class Game
 	private var _movementTimer: Timer;
 	private var _string: String;
 	private var _commandLine: CommandLine;
+	private var _helpLine: CommandLine;
 	
 }

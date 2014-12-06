@@ -12,16 +12,22 @@ class CommandLine extends Sprite
 	private var _text:String;
 	private var _input:TextField;
 
-	public function new():Void
+	public function new( userInput:Bool = true ):Void
 	{
 	    super();
 
 	    this.x = 0;
-	    this.y = 224;
+	    this.y = (userInput ? 224 : 208);
 
-	    addChild( new Bitmap( Assets.getBitmapData("img/command_line.png") ) );
+	    addChild( new Bitmap( Assets.getBitmapData(
+	    	userInput ? "img/command_line.png" : "img/help_line.png"
+    	) ) );
 
-        var format:TextFormat = new TextFormat (Assets.getFont ("assets/fonts/nokiafc22.ttf").fontName, 8, 0x669f34);
+        var format:TextFormat = new TextFormat (Assets.getFont ("assets/fonts/nokiafc22.ttf").fontName, 8, 
+         	userInput ?  
+         		0xae81ff : // purple
+         		0x808080 // yellow
+    	);
 		addChild( _input = new TextField() );
 		_input.width = 250;
 		_input.y = 1;
@@ -33,6 +39,11 @@ class CommandLine extends Sprite
 		_input.embedFonts = true;
 
 		setContent("");
+
+		if ( !userInput )
+		{
+			setVisible( false );
+		}
 	}	
 
 	public function setContent(text:String):Void
@@ -44,6 +55,12 @@ class CommandLine extends Sprite
 	public function getContent():String
 	{
 	    return this._text;
+	}
+
+	public function setVisible(visible:Bool):Void
+	{
+		// show / hide
+	    this.visible = visible;
 	}
 
 }

@@ -361,6 +361,11 @@ class Game
 		_helpLine.setVisible(true);
 		_helpLine.setContent("HELP!!!");
 		
+		SfxEngine.play("music/music_1.mp3", true, 0.02);
+
+		var generator:hext.ExpressionGenerator = new hext.ExpressionGenerator();
+		trace("action: "+generator.getAdminAction());
+		trace("scan: "+generator.getScan());
 
 		/*
 		SfxEngine.play("snd/applause.wav", true);

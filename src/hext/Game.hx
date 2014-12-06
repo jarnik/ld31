@@ -330,6 +330,38 @@ class Game
 		}
 	}
 	
+	public function onKeyDown(charCode: Int)
+	{
+		if (_string == null)
+		{
+			_string = new String("_");
+		}
+		
+		if (charCode == 0)
+		{
+			return;
+		}
+		// enter
+		if (charCode == 13)
+		{
+			return;
+		}
+		// backspace
+		if (charCode == 8)
+		{
+			if (_string.length > 1)
+			{
+				_string = _string.substr(0, _string.length - 2) + "_";
+				_commandLine.setContent(_string);
+			}
+			return;
+		}
+		
+		_string = _string.substr(0, _string.length - 1);
+		_string += String.fromCharCode(charCode) + "_";
+		_commandLine.setContent(_string);
+	}
+	
 	public function onMovementTimer(event: TimerEvent)
 	{
 		_movementTimer.stop();
@@ -359,6 +391,7 @@ class Game
 	private var _avatar: Avatar;
 	private var _movable: Bool;
 	private var _movementTimer: Timer;
+	private var _string: String;
 	private var _commandLine: CommandLine;
 	
 }

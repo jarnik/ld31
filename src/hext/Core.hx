@@ -51,6 +51,8 @@ class Core
 	
 	private function onKeyDown(event: KeyboardEvent)
 	{
+		Main.game.onKeyDown(event.charCode);
+		
 		_keysDown[event.keyCode] = true;
 	}
 	

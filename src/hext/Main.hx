@@ -202,17 +202,27 @@ class Game
 		_tiles = new Array<Array<Tile>>();
 		for (r in 0 ... _ROWS) _tiles[r] = [];
 
-		// fill
-		for (r in 0 ... _ROWS)
-		{
-			for (c in 0 ... _COLS)
-			{
-				_tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );
-				_scene.addChild(_tiles[r][c].getBgSprite());
-			}
-		}
-		
 		_avatar = new Avatar( { row: 0, col: 0 } );
+		
+		var initStr : String = new String("");
+		initStr += "################,";
+		initStr += "#A   # a  a  a #,";
+		initStr += "#    # u  u  u #,";
+		initStr += "#              #,";
+		initStr += "######    @    #,";
+		initStr += "#              #,";
+		initStr += "#              #,";
+		initStr += "#              #,";
+		initStr += "#              #,";
+		initStr += "#              #,";
+		initStr += "#              #,";
+		initStr += "######         #,";
+		initStr += "#              #,";
+		initStr += "#    # b  b  b #,";
+		initStr += "#B   # u  u  u #,";
+		initStr += "################";
+		initFromString(initStr);
+		
 		_scene.addChild(_avatar.getSprite());
 		
 		_movable = true;
@@ -234,11 +244,38 @@ class Game
 		*/
 	}
 	
-	public function ovce(o: Int)
+	public function initFromString(string: String)
 	{
-		trace(o);
+		var rows : Array<String> = string.split(",");
+		for (r in 0 ... rows.length)
+		{
+			for (c in 0 ... rows[r].length)
+			{
+				switch (rows[r].charAt(c))
+				{
+					case " ": _tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );
+					case "#": _tiles[r][c] = new Tile(TileType.Wall, { row: r, col: c } );
+					case "A": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					case "B": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					case "C": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					case "D": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					case "a": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					case "b": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					case "c": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					case "d": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					case "u": _tiles[r][c] = new Tile(TileType.User, { row: r, col: c } );
+				    case "@": _tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );
+					          _avatar.setPosition( { row: r, col: c } );
+					default: _tiles[r][c] = null;
+				}
+				if (_tiles[r][c] != null)
+				{
+					_scene.addChild(_tiles[r][c].getBgSprite());
+				}
+			}
+		}
 	}
-	
+
 	public function run(delta: Float, keysDown: Map<Int, Bool>)
 	{
 		if (_avatar == null)
@@ -309,7 +346,6 @@ class Game
 	
 	private function onClick(event: MouseEvent)
 	{
-		
 		SfxEngine.stop();
 		// trace("sprite clicked");
 	}

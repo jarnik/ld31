@@ -299,6 +299,7 @@ class Game
 		_helpLine.setVisible(true);
 		_helpLine.setContent("HELP!!!");
 		
+		SfxEngine.play("music/music_1.mp3", true, 0.02);
 
 		/*
 		SfxEngine.play("snd/applause.wav", true);

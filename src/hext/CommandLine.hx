@@ -23,7 +23,7 @@ class CommandLine extends Sprite
 	    	userInput ? "img/command_line.png" : "img/help_line.png"
     	) ) );
 
-        var format:TextFormat = new TextFormat (Assets.getFont ("assets/fonts/nokiafc22.ttf").fontName, 8, 
+        var format:TextFormat = new TextFormat (Assets.getFont ("fonts/nokiafc22.ttf").fontName, 8, 
          	userInput ?  
          		0xae81ff : // purple
          		0x808080 // yellow

@@ -122,7 +122,8 @@ class Tile
 			case (TileType.Server):
 			{
 				_fgSprite = new AnimatedSprite("img/server.png", { w: 16, h: 16 } );
-				_fgSprite.start(1000);
+				_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
+				_fgSprite.start(500 + Math.random() * 1000);
 			}
 			case (TileType.Workstation):
 			{
@@ -188,7 +189,7 @@ class Game
 	
 	public function new()
 	{
-		_scene = new SceneSprite( { w: _ROWS * _TILE_SIZE, h: _COLS * _TILE_SIZE } );
+		_scene = new SceneSprite( { w: _COLS * _TILE_SIZE, h: _ROWS * _TILE_SIZE } );
 		_scene.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		Lib.current.addChild(_scene);
 		
@@ -199,22 +200,20 @@ class Game
 		_avatar = new Avatar( { row: 0, col: 0 } );
 		
 		var initStr : String = new String("");
-		initStr += "################,";
-		initStr += "#A   # a  a  a #,";
-		initStr += "#    # u  u  u #,";
-		initStr += "#              #,";
-		initStr += "######    @    #,";
-		initStr += "#              #,";
-		initStr += "#              #,";
-		initStr += "#              #,";
-		initStr += "#              #,";
-		initStr += "#              #,";
-		initStr += "#              #,";
-		initStr += "######         #,";
-		initStr += "#              #,";
-		initStr += "#    # b  b  b #,";
-		initStr += "#B   # u  u  u #,";
-		initStr += "################";
+		initStr += "####################,";
+		initStr += "#A      #    a  a  #,";
+		initStr += "#       #    u  u  #,";
+		initStr += "#### ####          #,";
+		initStr += "# c  c  # @   ######,";
+		initStr += "# u  u  #     #   C#,";
+		initStr += "#                  #,";
+		initStr += "# d  d  #     ######,";
+		initStr += "# u  u  #     #   D#,";
+		initStr += "#########     ## ###,";
+		initStr += "#                  #,";
+		initStr += "#    # b  b  b  b  #,";
+		initStr += "#B   # u  u  u  u  #,";
+		initStr += "####################";
 		initFromString(initStr);
 		
 		_scene.addChild(_avatar.getSprite());
@@ -344,10 +343,10 @@ class Game
 		// trace("sprite clicked");
 	}
 	
-	private static var _ROWS = 16;
-	private static var _COLS = 16;
+	private static var _ROWS = 14;
+	private static var _COLS = 20;
 	
-	public static var _TILE_SIZE = 20;
+	public static var _TILE_SIZE = 16;
 	
 	private var _scene: SceneSprite;
 	

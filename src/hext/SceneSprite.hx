@@ -29,11 +29,13 @@ class SceneSprite extends Sprite
 	{
 		removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 		stage.addEventListener(Event.RESIZE, onResize);
+		onResize(null);
 	}
 	
 	private function onResize(event)
 	{
-		scaleX = scaleY = 2;
+		scaleX = 2;
+		scaleY = 2;
 		
 		/*
 		var sceneRatio = _size.w / _size.h;

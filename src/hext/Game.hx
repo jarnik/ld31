@@ -222,6 +222,10 @@ class Game
 		_movementTimer = new Timer(150);
 		_movementTimer.addEventListener(TimerEvent.TIMER, onMovementTimer);
 		
+		_scene.addChild(_commandLine = new CommandLine());
+		_commandLine.setContent("START TYPING!!!");
+		
+
 		/*
 		SfxEngine.play("snd/applause.wav", true);
 		
@@ -355,5 +359,6 @@ class Game
 	private var _avatar: Avatar;
 	private var _movable: Bool;
 	private var _movementTimer: Timer;
+	private var _commandLine: CommandLine;
 	
 }

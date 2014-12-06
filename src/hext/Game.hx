@@ -143,6 +143,7 @@ class Tile
 			}
 			case (TileType.Server):
 			{
+				_online = true;
 				_corruption = 0;
 				_fgSprite = new AnimatedSprite("img/server.png", { w: 16, h: 16 } );
 				_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
@@ -260,15 +261,19 @@ class Tile
 		}
 		if (_corruption == 0)
 		{
-			if (Math.random() < 0.1)
+			if (Math.random() < 0.03)
 			{
-				_corruption = 10;
-				return;
+				_corruption = 5;
 			}
+			return;
 		}
 		if (_corruption < 100)
 		{
 			_corruption += 5;
+		    if (_corruption >= 100)
+			{
+				setInfected();
+			}
 		}
 		if (_corruption >= 100 && _server._online)
 		{
@@ -282,12 +287,16 @@ class Tile
 			else if (_server._corruption < 100)
 			{
 				_server._corruption += 2;
+				if (_server._corruption >= 100)
+				{
+					_server.setInfected();
+				}
 			}
 		}
 	}
 	
 	private function serverUpdate()
-	{
+	{		
 		if (!_online)
 		{
 			return;
@@ -295,6 +304,10 @@ class Tile
 		if (_corruption > 0 && _corruption < 100)
 		{
 			_corruption += 2;
+			if (_corruption >= 100)
+			{
+				setInfected();
+			}
 		}
 		if (_corruption >= 100)
 		{
@@ -346,10 +359,34 @@ class Tile
 	{
 		if (_corruption < 100 && !_broken)
 		{
-			if (Math.random() < 0.1)
+			if (Math.random() < 0.01)
 			{
-				_broken = true;
+				setBroken();
 			}
+		}
+	}
+	
+	private function setBroken()
+	{
+		_broken = true;
+		_fgLayer.removeChildren();
+		_fgSprite = new AnimatedSprite("img/workstation_bsod.png");
+		_fgLayer.addChild(_fgSprite);
+	}
+	
+	private function setInfected()
+	{
+		if (_type == TileType.Workstation)
+		{
+			_fgLayer.removeChildren();
+			_fgSprite = new AnimatedSprite("img/workstation_virus.png");
+			_fgLayer.addChild(_fgSprite);
+		}
+		else if (_type == TileType.Server)
+		{
+			_fgLayer.removeChildren();
+			_fgSprite = new AnimatedSprite("img/server_corrupted.png");
+			_fgLayer.addChild(_fgSprite);
 		}
 	}
 	
@@ -515,7 +552,6 @@ class Game
 		for (i in 1 ... 5)
 		{
 			var server = findServer(i);
-			trace("i:" + server);
 			var workstations = findWorkstations(i);
 			for (j in 0 ... workstations.length)
 			{

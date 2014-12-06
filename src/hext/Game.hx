@@ -839,31 +839,6 @@ class Game
 		// enter
 		if (charCode == 13)
 		{
-			if ((_helpLine.getContent() + "_") == _commandLine.getContent()
-			    && _playerAction != PlayerAction.ACTION_NONE)
-			{
-				SfxEngine.play("snd/pc_entering_valid_cmd.mp3");
-				_commandLine.setContent("_");
-				var computer = findNearestComputer();
-				if (_playerAction == PlayerAction.ACTION_ADMIN)
-				{
-					if (computer != null && computer.isBroken())
-					{
-						computer.fix();
-					}
-				}
-				else if (_playerAction == PlayerAction.ACTION_SCAN)
-				{
-					if (computer != null)
-					{
-						computer.clean();
-					}
-				}
-			}
-			else
-			{
-				SfxEngine.play("snd/pc_entering_invalid_cmd.mp3");
-			}
 			processInput( _string );
 			return;
 		}
@@ -900,7 +875,31 @@ class Game
 	    			switchState( STATE_PLAY );
 	    		}
     		case STATE_PLAY:	    		
-    			// TODO
+				if ((_helpLine.getContent() + "_") == _commandLine.getContent()
+					&& _playerAction != PlayerAction.ACTION_NONE)
+				{
+					SfxEngine.play("snd/pc_entering_valid_cmd.mp3");
+					_commandLine.setContent("_");
+					var computer = findNearestComputer();
+					if (_playerAction == PlayerAction.ACTION_ADMIN)
+					{
+						if (computer != null && computer.isBroken())
+						{
+							computer.fix();
+						}
+					}
+					else if (_playerAction == PlayerAction.ACTION_SCAN)
+					{
+						if (computer != null)
+						{
+							computer.clean();
+						}
+					}
+				}
+				else
+				{
+					SfxEngine.play("snd/pc_entering_invalid_cmd.mp3");
+				}
 	    	case STATE_GAME_OVER:
 	    		if ( input == "continue" )
 	    		{

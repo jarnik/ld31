@@ -1,7 +1,5 @@
 package hext;
 
-import hext.Main.Size;
-// import openfl._v2.system.PixelFormat;
 import openfl.Lib;
 import openfl.Assets;
 
@@ -40,18 +38,177 @@ import motion.easing.Linear;
 
 // rendering text boxes, gui, clipping rendering to parent (aka moving with camera)
 
+class Avatar
+{
+	
+	public function new(position: Position)
+	{
+		if (Math.random() < 0.5)
+		{
+			_sprite = new AnimatedSprite("img/player_girl.png");
+		}
+		else
+		{
+			_sprite = new AnimatedSprite("img/player_boy.png");
+		}
+		_sprite.scaleX = Game._TILE_SIZE / _sprite.width;
+		_sprite.scaleY = Game._TILE_SIZE / _sprite.height;
+		setPosition(position);
+	}
+	
+	public function setPosition(position: Position)
+	{
+		_position = position;
+		_sprite.x = _position.col * Game._TILE_SIZE;
+		_sprite.y = _position.row * Game._TILE_SIZE;
+	}
+	
+	public function getSprite() : AnimatedSprite
+	{
+		return _sprite;
+	}
+	
+	private var _position: Position;
+	private var _sprite : AnimatedSprite;
+	
+}
+
+enum TileType
+{
+	Floor;
+	Wall;
+	Server;
+	Workstation;
+	User;
+}
+
+typedef Position =
+{
+	row: Int,
+	col: Int
+}
+
+class Tile
+{
+	public function new(type: TileType, position: Position)
+	{
+		_position = position;
+		setType(type);
+	}
+	
+	public function loadBgSprite()
+	{
+		if (_bgSprite == null)
+		{
+			_bgSprite = new AnimatedSprite("img/floor.png");
+			_bgSprite.scaleX = Game._TILE_SIZE / _bgSprite.width;
+			_bgSprite.scaleY = Game._TILE_SIZE / _bgSprite.height;
+			_bgSprite.x = _position.col * Game._TILE_SIZE;
+			_bgSprite.y = _position.row * Game._TILE_SIZE;
+		}
+	}
+	
+	public function loadFgSprite()
+	{
+		if (_fgSprite != null)
+		{
+			_bgSprite.removeChildren();
+		}
+		
+		switch (_type)
+		{
+			case (TileType.Wall):
+			{
+				_fgSprite = new AnimatedSprite("img/wall.png");
+			}
+			case (TileType.Server):
+			{
+				_fgSprite = new AnimatedSprite("img/server.png");
+			}
+			case (TileType.Workstation):
+			{
+				_fgSprite = new AnimatedSprite("img/workstation.png");
+			}
+			case (TileType.User):
+			{
+				if (Math.random() < 0.5)
+				{
+					_fgSprite = new AnimatedSprite("img/user_girl.png");
+				}
+				else
+				{
+					_fgSprite = new AnimatedSprite("img/user_boy.png");
+				}
+			}
+			default:
+			{
+				_fgSprite = null;
+			}
+		}
+		
+		if (_fgSprite != null)
+		{
+			_bgSprite.addChild(_fgSprite);
+		}
+	}
+	
+	public function setType(type: TileType)
+	{
+		_type = type;
+		_passable = _type == TileType.Floor;
+		loadBgSprite();
+		loadFgSprite();
+	}
+	
+	public function getBgSprite() : AnimatedSprite
+	{
+		return _bgSprite;
+	}
+	
+	public function getFgSprite() : AnimatedSprite
+	{
+		return _fgSprite;
+	}
+	
+	private var _type: TileType;
+	private var _passable: Bool;
+	private var _position: Position;
+	
+	private var _bgSprite: AnimatedSprite;
+	private var _fgSprite: AnimatedSprite;
+	
+}
+
 class Game
 {
 	
 	public function new()
 	{
-		_scene = new SceneSprite( { w: 1024, h: 768 } );
+		_scene = new SceneSprite( { w: _ROWS * _TILE_SIZE, h: _COLS * _TILE_SIZE } );
 		_scene.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		Lib.current.addChild(_scene);
 		
+		// initialize
+		_tiles = new Array<Array<Tile>>();
+		for (r in 0 ... _ROWS) _tiles[r] = [];
+
+		// fill
+		for (r in 0 ... _ROWS)
+		{
+			for (c in 0 ... _COLS)
+			{
+				_tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );
+				_scene.addChild(_tiles[r][c].getBgSprite());
+			}
+		}
+		
+		_avatar = new Avatar( { row: 0, col: 0 } );
+		_scene.addChild(_avatar.getSprite());
+		
+		/*
 		SfxEngine.play("snd/applause.wav", true);
 		
-		var sprite = new AnimatedSprite("img/xowl.jpg", { w: 25, h: 25 } );
+		var sprite = new AnimatedSprite("img/xowl.jpg", { w: _TILE_SIZE, h: 25 } );
 		sprite.scaleX = sprite.scaleY = 5;
 		sprite.start(100);
 		sprite.x = 10;
@@ -60,36 +217,6 @@ class Game
 		
 		sprite.addEventListener(MouseEvent.CLICK, onClick);
 		_scene.addChild(sprite);
-		
-		/*
-		_scene._callback = function()
-		{
-			Lib.current.removeChildren();
-			Lib.current.addChild(_scene);
-			Lib.current.addChild(_scene._clipRect[0]);
-			Lib.current.addChild(_scene._clipRect[1]);
-		}
-		*/
-		
-		/*
-		Actuate.update(ovce, 2.0, [ 0 ], [ 10 ]).ease(Linear.easeNone) .onComplete(
-				function() { Actuate.update(ovce, 2.0, [ 10 ], [ 0 ]).ease(Linear.easeNone); }
-			);
-		
-		Actuate.tween(sprite, 10.0, { x: 500 } ).repeat().reflect().ease(Quad.easeInOut);
-		*/
-		
-		/*
-		var tf: TextField = new TextField();
-		tf.autoSize = TextFieldAutoSize.LEFT;
-		tf.setTextFormat(new TextFormat("Arial"));
-		// tf.lin
-		tf.wordWrap = true;
-		tf.x = 0;
-		tf.y = 0;
-		tf.text = "Nazdar Lamo Lolafaefeolol lamfaeif aef oaeijf aoief aoief aeoif eaoifj aeoijf eoia jf!";
-		
-		_scene.addChild(tf);
 		*/
 	}
 	
@@ -105,7 +232,6 @@ class Game
 	
 	public function onMouseMove(event: MouseEvent)
 	{
-		
 		// trace(event.localX);
 	}
 	
@@ -116,13 +242,15 @@ class Game
 		// trace("sprite clicked");
 	}
 	
-	private var _scene: SceneSprite;
-	private var _gui: Sprite; // unaffected by camera
-	private var _world: Sprite;
-	private var _camera: Point;
-	private var _offscreen: Bitmap;
+	private static var _ROWS = 16;
+	private static var _COLS = 16;
 	
-	private var _music: Sfx;
+	public static var _TILE_SIZE = 20;
+	
+	private var _scene: SceneSprite;
+	
+	private var _tiles: Array<Array<Tile>>;
+	private var _avatar: Avatar;
 	
 }
 

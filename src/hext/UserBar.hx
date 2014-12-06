@@ -23,9 +23,12 @@ class UserBar extends Sprite
 	private var _bar:Bitmap;
 	private var _ratio:Float;
 
-	public function new():Void
+	public function new( offsetY:Float = 0 ):Void
 	{
 	    super();
+
+	    this.y = offsetY;
+	    this.x = -1;
 
 	    addChild( this._border = new Bitmap( Assets.getBitmapData("img/bar.png") ) );
 	    this._border.width = 18;
@@ -48,6 +51,8 @@ class UserBar extends Sprite
 	// ratio = <0;1>
 	public function setRatio(ratio:Float):Void
 	{
+		ratio = Math.max( 0, Math.min ( 1, ratio ) );
+
 	    this._ratio = ratio;
 	    this._bar.scaleX = ratio;
 	    var color:Int = 0;

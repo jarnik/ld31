@@ -588,6 +588,11 @@ class SfxEngine
 		volume = Math.max(0.0, Math.min(1.0, volume));
 		panning = Math.max(-1.0, Math.min(1.0, panning));
 		
+		if (!Assets.exists(pathName, AssetType.SOUND))
+		{
+			return;
+		}
+		
 		var channel = Assets.getSound(pathName).play(0, loop ? 1000 : 0, new SoundTransform(_master * volume, panning));
 		channel.addEventListener(Event.SOUND_COMPLETE, onSoundComplete);
 		

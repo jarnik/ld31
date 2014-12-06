@@ -317,6 +317,14 @@ class Tile
 	
 }
 
+enum GameState
+{
+	STATE_TITLE;
+	STATE_PLAY;
+	STATE_GAME_OVER;
+	STATE_WIN;
+}
+
 class Game
 {
 	
@@ -354,14 +362,16 @@ class Game
 		_movementTimer = new Timer(150);
 		_movementTimer.addEventListener(TimerEvent.TIMER, onMovementTimer);
 		
+		_scene.addChild(_gui = new GameGUI());
+
 		_scene.addChild(_commandLine = new CommandLine());
 		_commandLine.setContent("START TYPING!!!");
 
 		_scene.addChild(_helpLine = new CommandLine( false ));
 		_helpLine.setVisible(true);
-		_helpLine.setContent("HELP!!!");
+		_helpLine.setContent("HELP!!!");		
 		
-		SfxEngine.play("music/music_1.mp3", true, 0.02);
+		switchState( STATE_PLAY );
 
 		var generator:hext.ExpressionGenerator = new hext.ExpressionGenerator();
 		// trace("action: "+generator.getAdminAction());
@@ -594,6 +604,34 @@ class Game
 		// trace("sprite clicked");
 	}
 	
+	private function switchState(newState:GameState):Void
+	{
+		this._state = newState;
+		this._gui.showState( this._state );
+	    switch ( newState )
+	    {
+	    	case STATE_TITLE:
+	    		playMusic("music/menu_1.mp3");
+    		case STATE_PLAY:
+	    		playMusic("music/music_1.mp3");
+	    	case STATE_GAME_OVER:
+	    		playMusic("music/game_over.mp3");
+	    	case STATE_WIN:
+	    		playMusic("music/victory.mp3");
+	    	default:
+	    }
+	}
+
+	private function playMusic(asset:String):Void
+	{
+	    if ( this._music != null )
+	    {
+	    	this._music.channel.stop();
+	    }
+
+	    this._music = SfxEngine.play(asset, true, 0.02);
+	}
+
 	private static var _ROWS = 14;
 	private static var _COLS = 20;
 	
@@ -609,5 +647,8 @@ class Game
 	private var _string: String;
 	private var _commandLine: CommandLine;
 	private var _helpLine: CommandLine;
-	
+	private var _state: GameState;
+	private var _gui: GameGUI;
+	private var _music: SfxEngine.Sfx;
+
 }

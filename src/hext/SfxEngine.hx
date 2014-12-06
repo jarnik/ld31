@@ -48,14 +48,14 @@ class SfxEngine
 		}
 	}
 	
-	public static function play(pathName: String, loop: Bool = false, volume: Float = 1.0, panning: Float = 0.0)
+	public static function play(pathName: String, loop: Bool = false, volume: Float = 1.0, panning: Float = 0.0):Sfx
 	{
 		volume = Math.max(0.0, Math.min(1.0, volume));
 		panning = Math.max(-1.0, Math.min(1.0, panning));
 		
 		if (!Assets.exists(pathName, AssetType.SOUND))
 		{
-			return;
+			return null;
 		}
 		
 		var channel = Assets.getSound(pathName).play(0, loop ? 1000 : 0, new SoundTransform(_master * volume, panning));
@@ -63,6 +63,7 @@ class SfxEngine
 		
 		var sfx = new Sfx(channel, volume, panning);
 		_sfxs.add(sfx);
+		return sfx;
 	}
 	
 	public static function stop()

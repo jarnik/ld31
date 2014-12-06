@@ -26,7 +26,7 @@ class ExpressionGenerator
 	{
 		var output:String = "";
 		output += getX()+getRandomItem(this._signs)+" ";
-		output += getX()+getRandomItem(this._signs)+" ";
+		// output += getX()+getRandomItem(this._signs)+" ";
 		output += getX()+getRandomItem(this._signs);
 	    return output;
 	}
@@ -56,13 +56,13 @@ class ExpressionGenerator
 	connect mouse, connect keyboard, turn on, turn off, restart, turn on monitor, 
 	maniacal laughter, watch porn, turn back, reinstall win, reboot, pray, 
 	eat harmburger, drink coke, tweet, google, take selfie, take footie, 
-	feet on table, sleep";
+	feet on table, sleep, praise gaben, sacrifice goat, confirm hl3";
 
 	private static var ADMIN_COMMANDS:String = "admin, alias, ar, at, batch, bc, bg, 
 	cat, cd, cflow, chgrp, chmod, chown, cksum, cmp, comm, compress, cp, crontab, 
 	ctags, csplit, cut, cxref, dd, delta, df, diff, dirname, du, echo, env, exfc, 
 	fg, file, find, fold, fort77, fuser, gencat, deadcat, getconf, grep, hash, 
-	id, ipcrm, ipcs, jobs, kill, lex, lexlutor, link, in, locale, logger, logname, 
+	id, ipcrm, ipcs, jobs, kill, lex, lexluthor, link, in, locale, logger, logname, 
 	lp, ls, m4, mailx, make, man, woman,  mesg, mkdir, mkfile, more, mv, nice, guy, nl, 
 	nm, od, odd, paste, patch, pax, pox, pr, prs, qalter, qdel, qhold, qmove, qmsg, qrerun, 
 	qrls, qselect, renice, rm, rmdir, sact, sccs, split, tail, tee, time, touch, tput, tr, 

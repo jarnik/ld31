@@ -1,5 +1,6 @@
 package hext;
 
+import hext.Game.PlayerAction;
 import hext.Game.Tile;
 import openfl.Lib;
 import openfl.Assets;
@@ -234,6 +235,11 @@ class Tile
 		return _broken;
 	}
 	
+	public function getCorruption() : Int
+	{
+		return _corruption;
+	}
+	
 	public function isCorrupted() : Bool
 	{
 		return _corruption >= 100;
@@ -346,7 +352,7 @@ class Tile
 		}
 		if (workstation._broken || workstation._corruption >= 100 || !workstation._server._online)
 		{
-			_anger += 10;
+			_anger += 2;
 			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3", false, 0.01);
 			if (_anger > 100)
 			{
@@ -380,27 +386,51 @@ class Tile
 		}
 	}
 	
+	public function fix()
+	{
+		if (isBroken())
+		{
+			_broken = false;
+			refreshFgSprite();
+		}
+	}
+	
+	public function clean()
+	{
+		if (_corruption != 0)
+		{
+			_corruption = 0;
+			refreshFgSprite();
+			if (_type == TileType.Server)
+			{
+				var workstations = Main.game.findWorkstations(_group);
+				for (i in 0 ... workstations.length)
+				{
+					if (workstations[i]._corruption > 0)
+					{
+						workstations[i]._corruption = 0;
+						workstations[i].refreshFgSprite();
+					}
+				}
+			}
+		}
+	}
+	
 	private function setBroken()
 	{
 		_broken = true;
-		_fgLayer.removeChildren();
-		_fgSprite = new AnimatedSprite("img/workstation_bsod.png");
-		_fgLayer.addChild(_fgSprite);
-	}
+		refreshFgSprite();
+    }
 	
 	private function setInfected()
 	{
 		if (_type == TileType.Workstation)
 		{
-			_fgLayer.removeChildren();
-			_fgSprite = new AnimatedSprite("img/workstation_virus.png");
-			_fgLayer.addChild(_fgSprite);
+			refreshFgSprite();
 		}
 		else if (_type == TileType.Server)
 		{
-			_fgLayer.removeChildren();
-			_fgSprite = new AnimatedSprite("img/server_corrupted.png");
-			_fgLayer.addChild(_fgSprite);
+			refreshFgSprite();
 		}
 	}
 	
@@ -409,12 +439,40 @@ class Tile
 		// state: broken, normal (<100 corruption), infected (100 corruption)
 		if (_type == TileType.Workstation)
 		{
-			
+			_fgLayer.removeChildren();
+			if (_broken)
+			{
+				_fgSprite = new AnimatedSprite("img/workstation_bsod.png");
+			}
+			else if (isCorrupted())
+			{
+				_fgSprite = new AnimatedSprite("img/workstation_virus.png");
+			}
+			else
+			{
+				_fgSprite = new AnimatedSprite("img/workstation.png");
+			}
+			_fgLayer.addChild(_fgSprite);
+			_bar.setRatio(_corruption / 100);
 		}
 		// state: offline, normal (<100 corruption), infected (100 corruption)
 		else if (_type == TileType.Server)
 		{
-			
+			_fgLayer.removeChildren();
+			if (!_online)
+			{
+				_fgSprite = new AnimatedSprite("img/server_off.png");
+			}
+			else if (isCorrupted())
+			{
+				_fgSprite = new AnimatedSprite("img/server_corrupted.png");
+			}
+			else
+			{
+				_fgSprite = new AnimatedSprite("img/server.png");
+		    }
+			_fgLayer.addChild(_fgSprite);
+			_bar.setRatio(_corruption / 100);
 		}
 	}
 	
@@ -447,6 +505,13 @@ enum GameState
 	STATE_PLAY;
 	STATE_GAME_OVER;
 	STATE_WIN;
+}
+
+enum PlayerAction
+{
+	ACTION_NONE;
+	ACTION_ADMIN;
+	ACTION_SCAN;
 }
 
 class Game
@@ -497,7 +562,8 @@ class Game
 
 		_scene.addChild(_helpLine = new CommandLine( false ));
 		_helpLine.setVisible(true);
-		_helpLine.setContent("Find a computer to fix!");		
+		_helpLine.setContent("Find a computer to fix!");
+		_playerAction = PlayerAction.ACTION_NONE;
 		
 		switchState( STATE_PLAY );
 
@@ -680,6 +746,7 @@ class Game
 			if (computer == null)
 			{
 				_helpLine.setContent("Find a computer to fix!");
+				_playerAction = PlayerAction.ACTION_NONE;
 				return;
 			}
 			else
@@ -689,19 +756,34 @@ class Game
 					if (computer.isBroken())
 					{
 						_helpLine.setContent(_generator.getAdminAction());
+						_commandLine.setContent("");
+						_playerAction = PlayerAction.ACTION_ADMIN;
 					}
-					else if (computer.isCorrupted())
+					else if (computer.getCorruption() > 0)
 					{
 						_helpLine.setContent(_generator.getScan());
+						_commandLine.setContent("");
+						_playerAction = PlayerAction.ACTION_SCAN;
 					}
 					else
 					{
 						_helpLine.setContent("Nothing to do here!");
+						_playerAction = PlayerAction.ACTION_NONE;
 					}
 				}
-				else
+				else // server
 				{
-					
+					if (computer.isCorrupted())
+					{
+						_helpLine.setContent(_generator.getScan());
+						_commandLine.setContent("");
+						_playerAction = PlayerAction.ACTION_SCAN;
+					}
+					else
+					{
+						_helpLine.setContent("Nothing to do here!");
+						_playerAction = PlayerAction.ACTION_NONE;
+					}
 				}
 			}
 		}
@@ -756,6 +838,31 @@ class Game
 		// enter
 		if (charCode == 13)
 		{
+			if ((_helpLine.getContent() + "_") == _commandLine.getContent()
+			    && _playerAction != PlayerAction.ACTION_NONE)
+			{
+				SfxEngine.play("snd/pc_entering_valid_cmd.mp3");
+				_commandLine.setContent("_");
+				var computer = findNearestComputer();
+				if (_playerAction == PlayerAction.ACTION_ADMIN)
+				{
+					if (computer != null && computer.isBroken())
+					{
+						computer.fix();
+					}
+				}
+				else if (_playerAction == PlayerAction.ACTION_SCAN)
+				{
+					if (computer != null)
+					{
+						computer.clean();
+					}
+				}
+			}
+			else
+			{
+				SfxEngine.play("snd/pc_entering_invalid_cmd.mp3");
+			}
 			return;
 		}
 		// backspace
@@ -839,6 +946,7 @@ class Game
 	private var _string: String;
 	private var _commandLine: CommandLine;
 	private var _helpLine: CommandLine;
+	private var _playerAction: PlayerAction;
 	private var _state: GameState;
 	private var _gui: GameGUI;
 	private var _music: SfxEngine.Sfx;

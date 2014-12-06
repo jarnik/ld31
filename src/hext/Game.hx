@@ -523,6 +523,7 @@ class Game
 	
 	public function initFromString(string: String)
 	{
+		_users = [];
 		var rows : Array<String> = string.split(",");
 		var popup:Sprite;
 		for (r in 0 ... rows.length)
@@ -561,6 +562,10 @@ class Game
 					if (popup != null)
 					{
 						_popupLayer.addChild( popup );
+					}
+					if ( _tiles[r][c].getType() == TileType.User )
+					{
+						_users.push( _tiles[r][c] );
 					}
 				}
 			}
@@ -705,6 +710,11 @@ class Game
 					
 				}
 			}
+		}
+
+		if ( _state == STATE_PLAY )
+		{
+			checkGameOverConditions();
 		}
 	}
 	
@@ -858,6 +868,23 @@ class Game
 	    this._commandLine.setContent(_string);
 	}
 
+	private function checkGameOverConditions():Void
+	{
+		var foundUser:Bool = false;
+		for (user in _users)
+		{
+			if ( user.getType() == TileType.User )
+			{
+				foundUser = true;
+				break;
+			}
+		}
+		if ( !foundUser )
+		{
+			switchState( STATE_GAME_OVER );
+		}
+	}
+
 	private function playMusic(asset:String):Void
 	{
 	    if ( this._music != null )
@@ -878,6 +905,7 @@ class Game
 	private var _popupLayer:Sprite;
 	
 	private var _tiles: Array<Array<Tile>>;
+	private var _users: Array<Tile>;
 	
 	private var _avatar: Avatar;
 	private var _movable: Bool;

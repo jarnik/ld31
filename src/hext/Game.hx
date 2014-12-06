@@ -262,6 +262,11 @@ class Tile
 	
 	private function onUpdateTimer(event: TimerEvent)
 	{
+		if ( Game.instance.getState() != STATE_PLAY )
+		{
+			return;
+		}
+
 		switch (_type)
 		{
 			case TileType.Workstation: workstationUpdate();
@@ -520,6 +525,9 @@ class Game
 	public function new()
 	{
 		_generator = new ExpressionGenerator();
+
+		Game.instance = this;
+		_state = STATE_TITLE;
 		
 		_scene = new SceneSprite( { w: _COLS * _TILE_SIZE, h: _ROWS * _TILE_SIZE } );
 		_scene.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
@@ -561,12 +569,10 @@ class Game
 		_commandLine.setContent("Type your commands here!");
 
 		_scene.addChild(_helpLine = new CommandLine( false ));
-		_helpLine.setVisible(true);
-		_helpLine.setContent("Find a computer to fix!");
 		_playerAction = PlayerAction.ACTION_NONE;
 		
-		switchState( STATE_PLAY );
-		//switchState( STATE_TITLE );
+		// switchState( STATE_PLAY );
+		switchState( STATE_TITLE );
 
 		var generator:hext.ExpressionGenerator = new hext.ExpressionGenerator();
 		// trace("action: "+generator.getAdminAction());
@@ -732,10 +738,15 @@ class Game
 		if (keysDown.exists(40))
 		{
 			newPos.row = newPos.row + 1;
-		}
+		}		
 
 		// map
 		_gui.setMapVisible( keysDown.exists(openfl.ui.Keyboard.CONTROL) && _state == STATE_PLAY );
+
+		if ( _state != STATE_PLAY )
+		{			
+			return;
+		}
 				
 		if (getTile(newPos) == null || !getTile(newPos).isPassable())
 		{
@@ -762,13 +773,13 @@ class Game
 					if (computer.isBroken())
 					{
 						_helpLine.setContent(_generator.getAdminAction());
-						_commandLine.setContent("");
+						clearCommandLine();
 						_playerAction = PlayerAction.ACTION_ADMIN;
 					}
 					else if (computer.getCorruption() > 0)
 					{
 						_helpLine.setContent(_generator.getScan());
-						_commandLine.setContent("");
+						clearCommandLine();
 						_playerAction = PlayerAction.ACTION_SCAN;
 					}
 					else
@@ -782,7 +793,7 @@ class Game
 					if (computer.isCorrupted())
 					{
 						_helpLine.setContent(_generator.getScan());
-						_commandLine.setContent("");
+						clearCommandLine();
 						_playerAction = PlayerAction.ACTION_SCAN;
 					}
 					else
@@ -792,12 +803,9 @@ class Game
 					}
 				}
 			}
-		}
+		}	
 
-		if ( _state == STATE_PLAY )
-		{
-			checkGameOverConditions();
-		}
+		checkGameOverConditions();	
 	}
 	
 	public function getNearestWorkstation(position: Position) : Tile
@@ -860,7 +868,6 @@ class Game
 				_string = _string.substr(0, _string.length - 2) + "_";
 				_commandLine.setContent(_string);
 				SfxEngine.play("snd/pc_keypress.mp3", false, 0.01);
-				
 			}
 			return;
 		}
@@ -888,8 +895,7 @@ class Game
 				if ((_helpLine.getContent() + "_") == _commandLine.getContent()
 					&& _playerAction != PlayerAction.ACTION_NONE)
 				{
-					SfxEngine.play("snd/pc_entering_valid_cmd.mp3");
-					_commandLine.setContent("_");
+					SfxEngine.play("snd/pc_entering_valid_cmd.mp3", false, 0.01);
 					var computer = findNearestComputer();
 					if (_playerAction == PlayerAction.ACTION_ADMIN)
 					{
@@ -905,14 +911,16 @@ class Game
 							computer.clean();
 						}
 					}
+					clearCommandLine();
 				}
 				else
 				{
-					SfxEngine.play("snd/pc_entering_invalid_cmd.mp3");
+					SfxEngine.play("snd/pc_entering_invalid_cmd.mp3", false, 0.01);
 				}
 	    	case STATE_GAME_OVER:
-	    		if ( input == "continue" )
+	    		if ( input == "i suck" )
 	    		{
+	    			// TODO - restart game state!
 	    			switchState( STATE_PLAY );
 	    		}
 	    	case STATE_WIN:
@@ -934,6 +942,11 @@ class Game
 	{
 		// trace(event.localX);
 	}
+
+	public function getState():GameState
+	{
+	    return this._state;
+	}
 	
 	private function onClick(event: MouseEvent)
 	{
@@ -952,7 +965,8 @@ class Game
 	    		playMusic("music/menu_1.mp3");
 	    		setHelp("type \"start\"");
     		case STATE_PLAY:
-	    		playMusic("music/music_1.mp3");
+	    		playMusic("music/music_1.mp3");				
+				_helpLine.setContent("Find a computer to fix!");
 	    	case STATE_GAME_OVER:
 	    		playMusic("music/game_over.mp3");
 	    		setHelp("type \"i suck\" to try again");
@@ -1005,6 +1019,8 @@ class Game
 	private static var _COLS = 20;
 	
 	public static var _TILE_SIZE = 16;
+
+	public static var instance:Game;
 	
 	private var _scene: SceneSprite;
 	private var _tileLayer:Sprite;

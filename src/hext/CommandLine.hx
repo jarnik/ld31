@@ -39,11 +39,6 @@ class CommandLine extends Sprite
 		_input.embedFonts = true;
 
 		setContent("");
-
-		if ( !userInput )
-		{
-			setVisible( false );
-		}
 	}	
 
 	public function setContent(text:String):Void
@@ -55,12 +50,6 @@ class CommandLine extends Sprite
 	public function getContent():String
 	{
 	    return this._text;
-	}
-
-	public function setVisible(visible:Bool):Void
-	{
-		// show / hide
-	    this.visible = visible;
 	}
 
 }

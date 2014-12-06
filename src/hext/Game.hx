@@ -301,7 +301,7 @@ class Game
 		
 		if (getTile(newPos) == null || !getTile(newPos).isPassable())
 		{
-			SfxEngine.play("snd/bump.wav");
+			SfxEngine.play("snd/pc_bumping_into_wall.mp3");
 		}
 		else if (_movable && (pos.col != newPos.col || pos.row != newPos.row))
 		{
@@ -309,7 +309,7 @@ class Game
 			_movementTimer.start();
 			
 			_avatar.setPosition(newPos);
-			SfxEngine.play("snd/move.wav");
+			SfxEngine.play("snd/pc_movement.mp3");
 		}
 	}
 	

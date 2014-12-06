@@ -489,6 +489,7 @@ class Game
 		_helpLine.setContent("HELP!!!");		
 		
 		switchState( STATE_PLAY );
+		//switchState( STATE_TITLE );
 
 		var generator:hext.ExpressionGenerator = new hext.ExpressionGenerator();
 		// trace("action: "+generator.getAdminAction());
@@ -692,6 +693,7 @@ class Game
 		// enter
 		if (charCode == 13)
 		{
+			processInput( _string );
 			return;
 		}
 		// backspace
@@ -713,6 +715,35 @@ class Game
 		SfxEngine.play("snd/pc_keypress.mp3", false, 0.01);
 	}
 	
+	private function processInput(input:String):Void
+	{
+		if ( StringTools.endsWith(input,"_") )
+		{
+			input = input.substr(0,-1);
+		}
+	 	switch ( _state )
+	    {
+	    	case STATE_TITLE:
+	    		if ( input == "start" )
+	    		{
+	    			switchState( STATE_PLAY );
+	    		}
+    		case STATE_PLAY:	    		
+    			// TODO
+	    	case STATE_GAME_OVER:
+	    		if ( input == "continue" )
+	    		{
+	    			switchState( STATE_PLAY );
+	    		}
+	    	case STATE_WIN:
+	    		if ( input == "i own3d" )
+	    		{
+	    			switchState( STATE_TITLE );
+	    		}
+	    	default:
+	    }   
+	}
+
 	public function onMovementTimer(event: TimerEvent)
 	{
 		_movementTimer.stop();
@@ -734,18 +765,33 @@ class Game
 	{
 		this._state = newState;
 		this._gui.showState( this._state );
+		this.clearCommandLine();
 	    switch ( newState )
 	    {
 	    	case STATE_TITLE:
 	    		playMusic("music/menu_1.mp3");
+	    		setHelp("type \"start\"");
     		case STATE_PLAY:
 	    		playMusic("music/music_1.mp3");
 	    	case STATE_GAME_OVER:
 	    		playMusic("music/game_over.mp3");
+	    		setHelp("type \"i suck\" to try again");
 	    	case STATE_WIN:
 	    		playMusic("music/victory.mp3");
+	    		setHelp("type \"i own3d\", oh mighty lord");
 	    	default:
 	    }
+	}
+
+	private function setHelp(help:String):Void
+	{
+	    this._helpLine.setContent( help );
+	}
+
+	private function clearCommandLine():Void
+	{
+		_string = "_";
+	    this._commandLine.setContent(_string);
 	}
 
 	private function playMusic(asset:String):Void

@@ -1,7 +1,7 @@
 package hext;
 
 import hext.Main.Size;
-import openfl._v2.system.PixelFormat;
+// import openfl._v2.system.PixelFormat;
 import openfl.Lib;
 import openfl.Assets;
 

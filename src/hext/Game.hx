@@ -90,10 +90,21 @@ typedef Position =
 class Tile
 {
 	public function new(type: TileType, position: Position)
-	{
+	{		
 		_updateTimer = new Timer(500);
 		_updateTimer.addEventListener(TimerEvent.TIMER, onUpdateTimer);
 		_position = position;
+		
+	    _masterSprite = new Sprite();
+		_masterSprite.x = _position.col * Game._TILE_SIZE;
+		_masterSprite.y = _position.row * Game._TILE_SIZE;
+	    _bgLayer = new Sprite();
+	    _fgLayer = new Sprite();
+	    _popupLayer = new Sprite();
+		_masterSprite.addChild(_bgLayer);
+		_masterSprite.addChild(_fgLayer);
+		_masterSprite.addChild(_popupLayer);
+		
 		loadBgSprite();
 		setType(type);
 	}
@@ -103,18 +114,19 @@ class Tile
 		if (_bgSprite == null)
 		{
 			_bgSprite = new AnimatedSprite("img/floor.png");
-			_bgSprite.scaleX = Game._TILE_SIZE / _bgSprite.width;
-			_bgSprite.scaleY = Game._TILE_SIZE / _bgSprite.height;
-			_bgSprite.x = _position.col * Game._TILE_SIZE;
-			_bgSprite.y = _position.row * Game._TILE_SIZE;
+			//_bgSprite.scaleX = Game._TILE_SIZE / _bgSprite.width;
+			//_bgSprite.scaleY = Game._TILE_SIZE / _bgSprite.height;
+			//_bgSprite.x = _position.col * Game._TILE_SIZE;
+			//_bgSprite.y = _position.row * Game._TILE_SIZE;
+			_bgLayer.addChild(_bgSprite);
 		}
 	}
 	
 	public function loadFgSprite()
-	{
+	{	
 		if (_fgSprite != null)
 		{
-            _bgSprite.removeChild(_fgSprite);
+            _fgLayer.removeChildren();
 			_fgSprite = null;
 			// _bgSprite.removeChildren();
 		}
@@ -162,7 +174,7 @@ class Tile
 		}
 		if (_fgSprite != null)
 		{
-			_bgSprite.addChild(_fgSprite);
+			_fgLayer.addChild(_fgSprite);
 		}
 	}
 	
@@ -178,19 +190,29 @@ class Tile
 		return _type;
 	}
 	
-	public function getBgSprite() : AnimatedSprite
+	public function getMasterSprite() : Sprite
 	{
-		return _bgSprite;
-	}
-	
-	public function getFgSprite() : AnimatedSprite
-	{
-		return _fgSprite;
+		return _masterSprite;
 	}
 	
 	public function isPassable() : Bool
 	{
 		return _passable;
+	}
+	
+	public function setGroup(group: Int)
+	{
+		_group = group;
+	}
+	
+	public function getGroup() : Int
+	{
+		return _group;
+	}
+	
+	public function setServer(server: Tile)
+	{
+		_server = server;
 	}
 	
 	private function onUpdateTimer(event: TimerEvent)
@@ -206,12 +228,12 @@ class Tile
 	
 	private function workstationUpdate()
 	{
-		
+		maybeBreak();
 	}
 	
 	private function serverUpdate()
 	{
-		
+		maybeBreak();
 	}
 	
 	private function userUpdate()
@@ -221,22 +243,56 @@ class Tile
 		{
 			return;
 		}
-		if (true || workstation._broken || workstation._corruption >= 100)
+		if (workstation._broken || workstation._corruption >= 100)
 		{
 			_anger += 10;
+			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3");
 			if (_anger > 100)
 			{
 				setType(TileType.Floor);
-				// SfxEngine.play("snd/npc_reached_anger_and_left.mp3");
+				SfxEngine.play("snd/npc_reached_anger_and_left.mp3");
 			}
 		}
 		else
 		{
-			_anger -= 10;
-			if (_anger < 0)
+			if (_anger > 0)
 			{
-				_anger = 0;
+				_anger -= 10;
+				SfxEngine.play("snd/npc_uses_pc_decreasing_anger.mp3");
+				if (_anger < 0)
+				{
+					_anger = 0;
+				}
 			}
+		}
+	}
+	
+	private function maybeBreak()
+	{
+		if (_corruption < 100 && !_broken)
+		{
+			if (_type == TileType.Workstation && Math.random() < 0.1)
+			{
+				_broken = true;
+			}
+			else if (_type == TileType.Server && Math.random() < 0.02)
+			{
+				_broken = true;
+			}
+		}
+	}
+	
+	private function refreshFgSprite()
+	{
+		// state: broken, normal (<100 corruption), infected (100 corruption)
+		if (_type == TileType.Workstation)
+		{
+			
+		}
+		// state: normal (<100 corruption), infected (100 corruption)
+		else if (_type == TileType.Server)
+		{
+			
 		}
 	}
 	
@@ -244,11 +300,18 @@ class Tile
 	private var _passable: Bool;
 	private var _position: Position;
 	
+	private var _group: Int; // workstation/server
+	private var _server: Tile; // workstation only
 	private var _broken: Bool; // workstation only
 	private var _corruption: Int; // workstation/server
 	private var _anger: Int; // user only
     private var _updateTimer: Timer; // workstation/server/user update; 0.5s
 	
+	private var _masterSprite: Sprite; // for position
+	private var _bgLayer: Sprite; // layer 0
+	private var _fgLayer: Sprite; // layer 1
+	private var _popupLayer: Sprite; // layer 2
+
 	private var _bgSprite: AnimatedSprite;
 	private var _fgSprite: AnimatedSprite;
 	
@@ -271,13 +334,12 @@ class Game
 		
 		var initStr : String = new String("");
 		initStr += "####################,";
-		initStr += "#A      #    a  a  #,";
-		initStr += "#       #    u  u  #,";
-		initStr += "#### ####          #,";
-		initStr += "# c  c  # @   ######,";
-		initStr += "# u  u  #     #   C#,";
-		initStr += "#                  #,";
-		initStr += "# d  d  #     ######,";
+		initStr += "#A      #  a  a  a #,";
+		initStr += "#### ####  u  u  u #,";
+		initStr += "# c  c  #          #,";
+		initStr += "# u  u  #     ## ###,";
+		initStr += "#         @   #   C#,";
+		initStr += "# d  d  #     #   ##,";
 		initStr += "# u  u  #     #   D#,";
 		initStr += "#########     ## ###,";
 		initStr += "#                  #,";
@@ -327,13 +389,21 @@ class Game
 					case " ": _tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );
 					case "#": _tiles[r][c] = new Tile(TileType.Wall, { row: r, col: c } );
 					case "A": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					          _tiles[r][c].setGroup(1);
 					case "B": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					          _tiles[r][c].setGroup(2);
 					case "C": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					          _tiles[r][c].setGroup(3);
 					case "D": _tiles[r][c] = new Tile(TileType.Server, { row: r, col: c } );
+					          _tiles[r][c].setGroup(4);
 					case "a": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					          _tiles[r][c].setGroup(1);
 					case "b": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					          _tiles[r][c].setGroup(2);
 					case "c": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					          _tiles[r][c].setGroup(3);
 					case "d": _tiles[r][c] = new Tile(TileType.Workstation, { row: r, col: c } );
+					          _tiles[r][c].setGroup(4);
 					case "u": _tiles[r][c] = new Tile(TileType.User, { row: r, col: c } );
 				    case "@": _tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );
 					          _avatar.setPosition( { row: r, col: c } );
@@ -341,10 +411,51 @@ class Game
 				}
 				if (_tiles[r][c] != null)
 				{
-					_scene.addChild(_tiles[r][c].getBgSprite());
+					_scene.addChild(_tiles[r][c].getMasterSprite());
 				}
 			}
 		}
+		
+		for (i in 0 ... 4)
+		{
+			var server = findServer(i);
+			var workstations = findWorkstations(i);
+			for (j in 0 ... workstations.length)
+			{
+				workstations[j].setServer(server);
+			}
+		}
+	}
+	
+	public function findServer(group: Int) : Tile
+	{
+		for (r in 0 ... _tiles.length)
+		{
+			for (c in 0 ... _tiles[r].length)
+			{
+				if (_tiles[r][c].getType() == TileType.Server && _tiles[r][c].getGroup() == group)
+				{
+					return _tiles[r][c];
+				}
+			}
+		}
+		return null;
+	}
+	
+	public function findWorkstations(group: Int) : Array<Tile>
+	{
+		var workstations : Array<Tile> = [];
+		for (r in 0 ... _tiles.length)
+		{
+			for (c in 0 ... _tiles[r].length)
+			{
+				if (_tiles[r][c].getType() == TileType.Workstation && _tiles[r][c].getGroup() == group)
+				{
+					workstations.push(_tiles[r][c]);
+				}
+			}
+		}
+		return workstations;
 	}
 
 	public function run(delta: Float, keysDown: Map<Int, Bool>)

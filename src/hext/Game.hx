@@ -584,7 +584,10 @@ class Game
 		{
 			newPos.row = newPos.row + 1;
 		}
-		
+
+		// map
+		_gui.setMapVisible( keysDown.exists(openfl.ui.Keyboard.CONTROL) && _state == STATE_PLAY );
+				
 		if (getTile(newPos) == null || !getTile(newPos).isPassable())
 		{
 			SfxEngine.play("snd/pc_bumping_into_wall.mp3", false, 0.01);

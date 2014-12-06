@@ -246,11 +246,11 @@ class Tile
 		if (workstation._broken || workstation._corruption >= 100)
 		{
 			_anger += 10;
-			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3");
+			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3", false, 0.01);
 			if (_anger > 100)
 			{
 				setType(TileType.Floor);
-				SfxEngine.play("snd/npc_reached_anger_and_left.mp3");
+				SfxEngine.play("snd/npc_reached_anger_and_left.mp3", false, 0.01);
 			}
 		}
 		else
@@ -258,7 +258,7 @@ class Tile
 			if (_anger > 0)
 			{
 				_anger -= 10;
-				SfxEngine.play("snd/npc_uses_pc_decreasing_anger.mp3");
+				SfxEngine.play("snd/npc_uses_pc_decreasing_anger.mp3", false, 0.01);
 				if (_anger < 0)
 				{
 					_anger = 0;
@@ -364,8 +364,8 @@ class Game
 		SfxEngine.play("music/music_1.mp3", true, 0.02);
 
 		var generator:hext.ExpressionGenerator = new hext.ExpressionGenerator();
-		trace("action: "+generator.getAdminAction());
-		trace("scan: "+generator.getScan());
+		// trace("action: "+generator.getAdminAction());
+		// trace("scan: "+generator.getScan());
 
 		/*
 		SfxEngine.play("snd/applause.wav", true);

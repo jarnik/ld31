@@ -31,12 +31,13 @@ class UserBar extends Sprite
 	    this.x = -1;
 
 	    addChild( this._border = new Bitmap( Assets.getBitmapData("img/bar.png") ) );
+	    setColorTint( this._border, 0x000000 );
 	    this._border.width = 18;
 	    this._border.height = 4;
-	    this._border.alpha = 0.4;
+	    this._border.alpha = 0.1;
 
 	    addChild( this._background = new Bitmap( Assets.getBitmapData("img/bar.png") ) );
-		setColorTint( this._background, 0x000000 );
+		setColorTint( this._background, 0x505050 );
 		_background.x = 1;
 		_background.y = 1;
 
@@ -73,6 +74,8 @@ class UserBar extends Sprite
 	    	color = 0xff0000; // red
 	    }
 		setColorTint( this._bar, color );
+
+		this.visible = ( ratio > 0 );
 	}
 
 	private function setColorTint(displayObject:DisplayObject, color:Int):Void

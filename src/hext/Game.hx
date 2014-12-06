@@ -189,9 +189,13 @@ class Tile
 		}
 		switch (_type)
 		{			
-			case TileType.User, TileType.Server:
+			case TileType.User, TileType.Server, TileType.Workstation:
 				_popupLayer = new Sprite();
-				_popupLayer.addChild( _bar = new UserBar( 18 ) );
+				_popupLayer.addChild( _bar = new UserBar( 
+					_type == TileType.Workstation ?
+						 -4 : // above
+						 17   // below
+					 ) );
 				_popupLayer.x = _masterSprite.x;
 				_popupLayer.y = _masterSprite.y;
 			default:
@@ -302,6 +306,7 @@ class Tile
 				}
 			}
 		}
+		_bar.setRatio( _corruption / 100 );
 	}
 	
 	private function serverUpdate()

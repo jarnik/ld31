@@ -63,6 +63,11 @@ class Avatar
 		_sprite.y = _position.row * Game._TILE_SIZE;
 	}
 	
+	public function getPosition() : Position
+	{
+		return _position;
+	}
+	
 	public function getSprite() : AnimatedSprite
 	{
 		return _sprite;
@@ -170,6 +175,11 @@ class Tile
 		return _fgSprite;
 	}
 	
+	public function isPassable() : Bool
+	{
+		return _passable;
+	}
+	
 	private var _type: TileType;
 	private var _passable: Bool;
 	private var _position: Position;
@@ -205,6 +215,10 @@ class Game
 		_avatar = new Avatar( { row: 0, col: 0 } );
 		_scene.addChild(_avatar.getSprite());
 		
+		_movable = true;
+		_movementTimer = new Timer(150);
+		_movementTimer.addEventListener(TimerEvent.TIMER, onMovementTimer);
+		
 		/*
 		SfxEngine.play("snd/applause.wav", true);
 		
@@ -227,7 +241,65 @@ class Game
 	
 	public function run(delta: Float, keysDown: Map<Int, Bool>)
 	{
+		if (_avatar == null)
+		{
+			return;
+		}
+		var pos = _avatar.getPosition();
+		var newPos = { row: pos.row, col: pos.col };
 		
+		// left
+		if (keysDown.exists(37))
+		{
+			newPos.col = newPos.col - 1;
+		}
+		// right
+		if (keysDown.exists(39)) 
+		{
+			newPos.col = newPos.col + 1;
+		}
+		// up
+		if (keysDown.exists(38))
+		{
+			newPos.row = newPos.row - 1; 
+		}
+		// down
+		if (keysDown.exists(40))
+		{
+			newPos.row = newPos.row + 1;
+		}
+		
+		if (getTile(newPos) == null || !getTile(newPos).isPassable())
+		{
+			SfxEngine.play("snd/bump.wav");
+		}
+		else if (_movable && (pos.col != newPos.col || pos.row != newPos.row))
+		{
+			_movable = false;
+			_movementTimer.start();
+			
+			_avatar.setPosition(newPos);
+			SfxEngine.play("snd/move.wav");
+		}
+	}
+	
+	public function getTile(position: Position) : Tile
+	{
+		if (position.row < 0 || position.row >= Game._ROWS
+		    || position.col < 0 || position.col >= Game._COLS)
+		{
+			return null;
+		}
+		else
+		{
+			return _tiles[position.row][position.col];
+		}
+	}
+	
+	public function onMovementTimer(event: TimerEvent)
+	{
+		_movementTimer.stop();
+		_movable = true;
 	}
 	
 	public function onMouseMove(event: MouseEvent)
@@ -250,7 +322,10 @@ class Game
 	private var _scene: SceneSprite;
 	
 	private var _tiles: Array<Array<Tile>>;
+	
 	private var _avatar: Avatar;
+	private var _movable: Bool;
+	private var _movementTimer: Timer;
 	
 }
 

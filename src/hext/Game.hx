@@ -109,7 +109,7 @@ class Tile
 		_masterSprite.addChild(_popupLayer);
 		
 		loadBgSprite();
-		setType(type);
+		setType(type);		
 	}
 	
 	public function loadBgSprite()
@@ -180,12 +180,30 @@ class Tile
 			_fgLayer.addChild(_fgSprite);
 		}
 	}
+
+	private function loadPopupSprite()
+	{	
+		if (_popupLayer != null)
+		{
+            _popupLayer.removeChildren();
+		}
+		switch (_type)
+		{			
+			case TileType.User, TileType.Server:
+				_popupLayer = new Sprite();
+				_popupLayer.addChild( _bar = new UserBar( 18 ) );
+				_popupLayer.x = _masterSprite.x;
+				_popupLayer.y = _masterSprite.y;
+			default:
+		}
+	}
 	
 	public function setType(type: TileType)
 	{
 		_type = type;
 		_passable = _type == TileType.Floor;
 		loadFgSprite();
+		loadPopupSprite();
 	}
 	
 	public function getType() : TileType
@@ -196,6 +214,10 @@ class Tile
 	public function getMasterSprite() : Sprite
 	{
 		return _masterSprite;
+	}
+	public function getPopupLayer() : Sprite
+	{
+		return _popupLayer;
 	}
 	
 	public function isPassable() : Bool
@@ -285,6 +307,7 @@ class Tile
 				}
 			}
 		}
+		_bar.setRatio( _corruption / 100 );
 	}
 	
 	private function userUpdate()
@@ -316,6 +339,7 @@ class Tile
 				}
 			}
 		}
+		_bar.setRatio( _anger / 100 );
 	}
 	
 	private function maybeBreak()
@@ -362,6 +386,7 @@ class Tile
 
 	private var _bgSprite: AnimatedSprite;
 	private var _fgSprite: AnimatedSprite;
+	private var _bar: UserBar;
 	
 }
 
@@ -381,6 +406,8 @@ class Game
 		_scene = new SceneSprite( { w: _COLS * _TILE_SIZE, h: _ROWS * _TILE_SIZE } );
 		_scene.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		Lib.current.addChild(_scene);
+		_scene.addChild( _tileLayer = new Sprite() );		
+		_scene.addChild( _popupLayer = new Sprite() );		
 		
 		// initialize
 		_tiles = new Array<Array<Tile>>();
@@ -404,7 +431,7 @@ class Game
 		initStr += "####################";
 		initFromString(initStr);
 		
-		_scene.addChild(_avatar.getSprite());
+		_tileLayer.addChild(_avatar.getSprite());
 		
 		_movable = true;
 		_movementTimer = new Timer(150);
@@ -443,6 +470,7 @@ class Game
 	public function initFromString(string: String)
 	{
 		var rows : Array<String> = string.split(",");
+		var popup:Sprite;
 		for (r in 0 ... rows.length)
 		{
 			for (c in 0 ... rows[r].length)
@@ -474,7 +502,12 @@ class Game
 				}
 				if (_tiles[r][c] != null)
 				{
-					_scene.addChild(_tiles[r][c].getMasterSprite());
+					_tileLayer.addChild(_tiles[r][c].getMasterSprite());
+					popup = _tiles[r][c].getPopupLayer();
+					if (popup != null)
+					{
+						_popupLayer.addChild( popup );
+					}
 				}
 			}
 		}
@@ -687,6 +720,8 @@ class Game
 	public static var _TILE_SIZE = 16;
 	
 	private var _scene: SceneSprite;
+	private var _tileLayer:Sprite;
+	private var _popupLayer:Sprite;
 	
 	private var _tiles: Array<Array<Tile>>;
 	

@@ -131,7 +131,6 @@ class Tile
 		{
             _fgLayer.removeChildren();
 			_fgSprite = null;
-			// _bgSprite.removeChildren();
 		}
 		
 		switch (_type)
@@ -224,6 +223,16 @@ class Tile
 	public function isPassable() : Bool
 	{
 		return _passable;
+	}
+	
+	public function isBroken() : Bool
+	{
+		return _broken;
+	}
+	
+	public function isCorrupted() : Bool
+	{
+		return _corruption >= 100;
 	}
 	
 	public function setGroup(group: Int)
@@ -440,6 +449,8 @@ class Game
 	
 	public function new()
 	{
+		_generator = new ExpressionGenerator();
+		
 		_scene = new SceneSprite( { w: _COLS * _TILE_SIZE, h: _ROWS * _TILE_SIZE } );
 		_scene.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
 		Lib.current.addChild(_scene);
@@ -477,11 +488,11 @@ class Game
 		_scene.addChild(_gui = new GameGUI());
 
 		_scene.addChild(_commandLine = new CommandLine());
-		_commandLine.setContent("START TYPING!!!");
+		_commandLine.setContent("Type your commands here!");
 
 		_scene.addChild(_helpLine = new CommandLine( false ));
 		_helpLine.setVisible(true);
-		_helpLine.setContent("HELP!!!");		
+		_helpLine.setContent("Find a computer to fix!");		
 		
 		switchState( STATE_PLAY );
 
@@ -575,6 +586,31 @@ class Game
 		return null;
 	}
 	
+	public function findNearestComputer() : Tile
+	{
+		var computer = null;
+		var distance = 1000;
+		for (r in 0 ... _tiles.length)
+		{
+			for (c in 0 ... _tiles[r].length)
+			{
+				if (_tiles[r][c].getType() != TileType.Workstation
+				    && _tiles[r][c].getType() != TileType.Server)
+				{
+					continue;
+				}
+				var d = Math.floor((Math.abs(r - _avatar.getPosition().row)
+				                    + Math.abs(c - _avatar.getPosition().col)));
+				if (d == 1 && d < distance)
+				{
+					computer = _tiles[r][c];
+					distance = d;
+				}
+			}
+		}
+		return computer;
+	}
+	
 	public function findWorkstations(group: Int) : Array<Tile>
 	{
 		var workstations : Array<Tile> = [];
@@ -635,6 +671,34 @@ class Game
 			
 			_avatar.setPosition(newPos);
 			SfxEngine.play("snd/pc_movement.mp3", false, 0.01);
+			var computer = findNearestComputer();
+			if (computer == null)
+			{
+				_helpLine.setContent("Find a computer to fix!");
+				return;
+			}
+			else
+			{
+				if (computer.getType() == TileType.Workstation)
+				{
+					if (computer.isBroken())
+					{
+						_helpLine.setContent(_generator.getAdminAction());
+					}
+					else if (computer.isCorrupted())
+					{
+						_helpLine.setContent(_generator.getScan());
+					}
+					else
+					{
+						_helpLine.setContent("Nothing to do here!");
+					}
+				}
+				else
+				{
+					
+				}
+			}
 		}
 	}
 	
@@ -773,5 +837,6 @@ class Game
 	private var _state: GameState;
 	private var _gui: GameGUI;
 	private var _music: SfxEngine.Sfx;
+	private var _generator: ExpressionGenerator;
 
 }

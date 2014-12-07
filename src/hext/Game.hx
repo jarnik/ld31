@@ -266,6 +266,14 @@ class Tile
 		_server = server;
 	}
 	
+	public function stopUpdateTimer()
+	{
+		if (_updateTimer != null)
+		{
+			_updateTimer.stop();
+		}
+	}
+	
 	private function onUpdateTimer(event: TimerEvent)
 	{
 		if ( Game.instance.getState() != STATE_PLAY )
@@ -626,6 +634,10 @@ class Game
 		{
 			for (c in 0 ... rows[r].length)
 			{
+				if (_tiles[r][c] != null)
+				{
+					_tiles[r][c].stopUpdateTimer();
+				}
 				switch (rows[r].charAt(c))
 				{
 					case " ": _tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );

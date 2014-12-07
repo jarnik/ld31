@@ -619,22 +619,13 @@ class Game
 	{
 		_users = [];
 		_tileLayer.removeChildren();
+		_popupLayer.removeChildren();
 		var rows : Array<String> = string.split(",");
 		var popup:Sprite;
 		for (r in 0 ... rows.length)
 		{
 			for (c in 0 ... rows[r].length)
 			{
-				if (_tiles[r][c] != null)
-				{
-					//_tileLayer.removeChild(_tiles[r][c].getMasterSprite());
-					popup = _tiles[r][c].getPopupLayer();
-					if (popup != null)
-					{
-						_popupLayer.removeChild(popup);
-						popup = null;
-					}
-				}
 				switch (rows[r].charAt(c))
 				{
 					case " ": _tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );

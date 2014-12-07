@@ -364,11 +364,11 @@ class Tile
 		if (workstation._broken || workstation._corruption >= 100 || !workstation._server._online)
 		{
 			_anger += 2;
-			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3", false, 0.01);
+			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3", false, Game._SFX_VOLUME * 0.5);
 			if (_anger > 100)
 			{
 				setType(TileType.Floor);
-				SfxEngine.play("snd/npc_reached_anger_and_left.mp3", false, 0.01);
+				SfxEngine.play("snd/npc_reached_anger_and_left.mp3", false, Game._SFX_VOLUME);
 			}
 		}
 		else
@@ -376,7 +376,7 @@ class Tile
 			if (_anger > 0)
 			{
 				_anger -= 10;
-				SfxEngine.play("snd/npc_uses_pc_decreasing_anger.mp3", false, 0.01);
+				SfxEngine.play("snd/npc_uses_pc_decreasing_anger.mp3", false, Game._SFX_VOLUME * 0.5);
 				if (_anger < 0)
 				{
 					_anger = 0;
@@ -818,7 +818,7 @@ class Game
 				
 		if (getTile(newPos) == null || !getTile(newPos).isPassable())
 		{
-			SfxEngine.play("snd/pc_bumping_into_wall.mp3", false, 0.01);
+			SfxEngine.play("snd/pc_bumping_into_wall.mp3", false, _SFX_VOLUME);
 		}
 		else if (_movable && (pos.col != newPos.col || pos.row != newPos.row))
 		{
@@ -826,7 +826,7 @@ class Game
 			_movementTimer.start();
 			
 			_avatar.setPosition(newPos);
-			SfxEngine.play("snd/pc_movement.mp3", false, 0.01);
+			SfxEngine.play("snd/pc_movement.mp3", false, _SFX_VOLUME);
 			var computer = findNearestComputer();
 			if (computer == null)
 			{
@@ -936,7 +936,7 @@ class Game
 			{
 				_string = _string.substr(0, _string.length - 2) + "_";
 				_commandLine.setContent(_string);
-				SfxEngine.play("snd/pc_keypress.mp3", false, 0.01);
+				SfxEngine.play("snd/pc_keypress.mp3", false, _SFX_VOLUME);
 			}
 			return;
 		}
@@ -944,7 +944,7 @@ class Game
 		_string = _string.substr(0, _string.length - 1);
 		_string += String.fromCharCode(charCode) + "_";
 		_commandLine.setContent(_string);
-		SfxEngine.play("snd/pc_keypress.mp3", false, 0.01);
+		SfxEngine.play("snd/pc_keypress.mp3", false, _SFX_VOLUME);
 	}
 	
 	private function processInput(input:String):Void
@@ -964,7 +964,7 @@ class Game
 				if ((_helpLine.getContent() + "_") == _commandLine.getContent()
 					&& _playerAction != PlayerAction.ACTION_NONE)
 				{
-					SfxEngine.play("snd/pc_entering_valid_cmd.mp3", false, 0.01);
+					SfxEngine.play("snd/pc_entering_valid_cmd.mp3", false, _SFX_VOLUME);
 					var computer = findNearestComputer();
 					if (_playerAction == PlayerAction.ACTION_ADMIN)
 					{
@@ -984,7 +984,7 @@ class Game
 				}
 				else
 				{
-					SfxEngine.play("snd/pc_entering_invalid_cmd.mp3", false, 0.01);
+					SfxEngine.play("snd/pc_entering_invalid_cmd.mp3", false, _SFX_VOLUME);
 				}
 	    	case STATE_GAME_OVER:
 	    		if ( input == "i suck" )
@@ -1035,7 +1035,8 @@ class Game
 	    		playMusic("music/menu_1.mp3");
 	    		setHelp("type \"start\"");
     		case STATE_PLAY:
-	    		playMusic("music/music_1.mp3");		
+    			var musicIndex:Int = Math.floor( Math.random() * (_MUSIC_TRACKS-1) ) + 1;
+	    		playMusic("music/music_"+musicIndex+".mp3");		
 	    		_timePlayed = 0;		
 				_helpLine.setContent("Find a computer to fix!");
 	    	case STATE_GAME_OVER:
@@ -1090,14 +1091,17 @@ class Game
 	    	this._music.channel.stop();
 	    }
 
-	    this._music = SfxEngine.play(asset, true, 0.02);
+	    this._music = SfxEngine.play(asset, true, _MUSIC_VOLUME);
 	}
 
 	private static var _ROWS = 14;
 	private static var _COLS = 20;
 	
 	public static var _TILE_SIZE = 16;
-	public static var _GAME_TIME:Float = 60;
+	public static var _GAME_TIME:Float = 90;
+	public static var _MUSIC_VOLUME:Float = 0.04;
+	public static var _SFX_VOLUME:Float = 0.03;
+	public static var _MUSIC_TRACKS:Int = 3;
 
 	public static var instance:Game;
 	

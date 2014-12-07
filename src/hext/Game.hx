@@ -168,12 +168,15 @@ class Tile
 			case (TileType.User):
 			{
 				_anger = 0;
+				_angry = false;
 				if (Math.random() < 0.5)
 				{
+					_girl = true;
 					_fgSprite = new AnimatedSprite("img/user_girl.png");
 				}
 				else
 				{
+					_girl = false;
 					_fgSprite = new AnimatedSprite("img/user_boy.png");
 				}
 				_updateTimer.start();
@@ -375,6 +378,11 @@ class Tile
 		{
 			_anger += 2;
 			SfxEngine.play("snd/npc_uses_pc_increasing_anger.mp3", false, Game._SFX_VOLUME * 0.5);
+			if (!_angry)
+			{
+				_angry = true;
+				refreshFgSprite();
+			}
 			if (_anger > 100)
 			{
 				setType(TileType.Floor);
@@ -384,6 +392,11 @@ class Tile
 		}
 		else
 		{
+			if (_angry)
+			{
+				_angry = false;
+				refreshFgSprite();
+			}
 			if (_anger > 0)
 			{
 				_anger -= 10;
@@ -503,6 +516,37 @@ class Tile
 			_fgLayer.addChild(_fgSprite);
 			_bar.setRatio(_corruption / 100);
 		}
+		else if (_type == TileType.User)
+		{
+			_fgLayer.removeChildren();
+			if (_angry)
+			{
+				if (_girl)
+				{
+					_fgSprite = new AnimatedSprite("img/user_girl_angry.png", { w: 16, h: 16 } );
+					_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
+					_fgSprite.start(500 + Math.random() * 200);
+				}
+				else
+				{
+					_fgSprite = new AnimatedSprite("img/user_boy_angry.png", { w: 16, h: 16 } );
+					_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
+					_fgSprite.start(500 + Math.random() * 200);
+				}
+			}
+			else
+			{
+				if (_girl)
+				{
+					_fgSprite = new AnimatedSprite("img/user_girl.png");
+				}
+				else
+				{
+					_fgSprite = new AnimatedSprite("img/user_boy.png");
+				}
+			}
+			_fgLayer.addChild(_fgSprite);
+		}
 	}
 	
 	private var _type: TileType;
@@ -515,6 +559,8 @@ class Tile
 	private var _broken: Bool; // workstation only
 	private var _corruption: Int; // workstation/server
 	private var _anger: Int; // user only
+	private var _angry: Bool; // user only (indicates angry animation)
+	private var _girl: Bool; // user only
     private var _updateTimer: Timer; // workstation/server/user update; 0.5s
 	
 	private var _masterSprite: Sprite; // for position

@@ -39,6 +39,12 @@ class Avatar
 	
 	public function new(position: Position)
 	{
+		resetSprite();
+		setPosition(position);
+	}
+	
+	public function resetSprite()
+	{
 		if (Math.random() < 0.5)
 		{
 			_sprite = new AnimatedSprite("img/player_girl.png");
@@ -49,7 +55,6 @@ class Avatar
 		}
 		_sprite.scaleX = Game._TILE_SIZE / _sprite.width;
 		_sprite.scaleY = Game._TILE_SIZE / _sprite.height;
-		setPosition(position);
 	}
 	
 	public function setPosition(position: Position)
@@ -541,23 +546,7 @@ class Game
 		for (r in 0 ... _ROWS) _tiles[r] = [];
 
 		_avatar = new Avatar( { row: 0, col: 0 } );
-		
-		var initStr : String = new String("");
-		initStr += "####################,";
-		initStr += "#A      #  a  a  a #,";
-		initStr += "#### ####  u  u  u #,";
-		initStr += "# c  c  #          #,";
-		initStr += "# u  u  #     ## ###,";
-		initStr += "#         @   #   C#,";
-		initStr += "# d  d  #     #   ##,";
-		initStr += "# u  u  #     #   D#,";
-		initStr += "#########     ## ###,";
-		initStr += "#                  #,";
-		initStr += "#    # b  b  b  b  #,";
-		initStr += "#B   # u  u  u  u  #,";
-		initStr += "####################";
-		initFromString(initStr);
-		
+		resetTiles();
 		_tileLayer.addChild(_avatar.getSprite());
 		
 		_movable = true;
@@ -596,9 +585,33 @@ class Game
 		*/
 	}
 
-	private function reset():Void
+	// note - also sets avatar position
+	private function resetTiles()
+	{
+		var initStr : String = new String("");
+		initStr += "####################,";
+		initStr += "#A      #  a  a  a #,";
+		initStr += "#### ####  u  u  u #,";
+		initStr += "# c  c  #          #,";
+		initStr += "# u  u  #     ## ###,";
+		initStr += "#         @   #   C#,";
+		initStr += "# d  d  #     #   ##,";
+		initStr += "# u  u  #     #   D#,";
+		initStr += "#########     ## ###,";
+		initStr += "#                  #,";
+		initStr += "#    # b  b  b  b  #,";
+		initStr += "#B   # u  u  u  u  #,";
+		initStr += "####################";
+		initFromString(initStr);
+	}
+	
+	private function reset() : Void
 	{
 	    // init / reset game here
+		_tileLayer.removeChild(_avatar.getSprite());
+		_avatar.resetSprite();
+		resetTiles();
+		_tileLayer.addChild(_avatar.getSprite());
 	}
 	
 	public function initFromString(string: String)
@@ -610,6 +623,16 @@ class Game
 		{
 			for (c in 0 ... rows[r].length)
 			{
+				if (_tiles[r][c] != null)
+				{
+					_tileLayer.removeChild(_tiles[r][c].getMasterSprite());
+					popup = _tiles[r][c].getPopupLayer();
+					if (popup != null)
+					{
+						_popupLayer.removeChild(popup);
+						popup = null;
+					}
+				}
 				switch (rows[r].charAt(c))
 				{
 					case " ": _tiles[r][c] = new Tile(TileType.Floor, { row: r, col: c } );

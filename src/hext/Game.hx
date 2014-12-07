@@ -1,5 +1,6 @@
 package hext;
 
+import haxe.macro.Expr.Position;
 import hext.Game.PlayerAction;
 import hext.Game.Tile;
 import openfl.Lib;
@@ -285,7 +286,7 @@ class Tile
 		}
 		if (_corruption == 0)
 		{
-			if (Math.random() < 0.03)
+			if (Main.game.isUserNearby(_position) && Math.random() < 0.03)
 			{
 				_corruption = 5;
 			}
@@ -384,7 +385,7 @@ class Tile
 	{
 		if (_corruption < 100 && !_broken)
 		{
-			if (Math.random() < 0.01)
+			if (Math.random() < 0.005)
 			{
 				setBroken();
 			}
@@ -667,6 +668,37 @@ class Game
 			}
 		}
 		return null;
+	}
+	
+    public function isUser(position: Position) : Bool
+	{
+		var tile = getTile(position);
+		if (tile == null)
+		{
+			return false;
+		}
+		return (tile.getType() == TileType.User);
+	}
+	
+	public function isUserNearby(position: Position) : Bool
+	{
+		if (isUser( { row: position.row - 1, col: position.col } ))
+		{
+			return true;
+		}
+		if (isUser( { row: position.row + 1, col: position.col } ))
+		{
+			return true;
+		}
+		if (isUser( { row: position.row, col: position.col - 1 } ))
+		{
+			return true;
+		}
+		if (isUser( { row: position.row, col: position.col + 1 } ))
+		{
+			return true;
+		}
+		return false;
 	}
 	
 	public function findNearestComputer() : Tile

@@ -55,7 +55,7 @@ class ExpressionGenerator
 	private static var ADMIN_ACTIONS:String = "facepalm, clean mouse, slap user, 
 	connect mouse, connect keyboard, turn on, turn off, restart, turn on monitor, 
 	maniacal laughter, watch porn, turn back, reinstall win, reboot, pray, 
-	eat harmburger, drink coke, tweet, google, take selfie, take footie, 
+	eat hamburger, drink coke, tweet, google, take selfie, take footie, 
 	feet on table, sleep, praise gaben, sacrifice goat, confirm hl3";
 
 	private static var ADMIN_COMMANDS:String = "admin, alias, ar, at, batch, bc, bg, 

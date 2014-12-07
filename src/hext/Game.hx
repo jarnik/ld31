@@ -965,13 +965,14 @@ class Game
 				}
 	    	case STATE_GAME_OVER:
 	    		if ( input == "i suck" )
-	    		{
-	    			// TODO - restart game state!
+	    		{	    			
+	    			reset();
 	    			switchState( STATE_PLAY );
 	    		}
 	    	case STATE_WIN:
 	    		if ( input == "i own3d" )
 	    		{
+	    			reset();
 	    			switchState( STATE_TITLE );
 	    		}
 	    	default:

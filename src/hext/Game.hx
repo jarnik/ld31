@@ -113,11 +113,6 @@ class Tile
 		loadBgSprite();
 		setType(type);		
 	}
-
-	private function reset():Void
-	{
-	    // init / reset game here
-	}
 	
 	public function loadBgSprite()
 	{
@@ -599,6 +594,11 @@ class Game
 		sprite.addEventListener(MouseEvent.CLICK, onClick);
 		_scene.addChild(sprite);
 		*/
+	}
+
+	private function reset():Void
+	{
+	    // init / reset game here
 	}
 	
 	public function initFromString(string: String)

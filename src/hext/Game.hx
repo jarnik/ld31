@@ -160,7 +160,8 @@ class Tile
 			{
 				_broken = false;
 				_corruption = 0;
-				_fgSprite = new AnimatedSprite("img/workstation.png");
+				_fgSprite = new AnimatedSprite("img/workstation.png", { w: 16, h: 16 } );
+				_fgSprite.start(500 + Math.random() * 1000);
 				_updateTimer.start();
 			}
 			case (TileType.User):

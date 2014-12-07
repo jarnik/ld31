@@ -488,7 +488,9 @@ class Tile
 			}
 			else
 			{
-				_fgSprite = new AnimatedSprite("img/server.png");
+				_fgSprite = new AnimatedSprite("img/server.png", { w: 16, h: 16 } );
+				_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
+				_fgSprite.start(500 + Math.random() * 1000);
 		    }
 			_fgLayer.addChild(_fgSprite);
 			_bar.setRatio(_corruption / 100);

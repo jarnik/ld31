@@ -25,9 +25,9 @@ class ExpressionGenerator
 	public function getScan():String
 	{
 		var output:String = "";
-		output += getX()+getRandomItem(this._signs)+" ";
-		// output += getX()+getRandomItem(this._signs)+" ";
-		output += getX()+getRandomItem(this._signs);
+		output += getX()+" "+getRandomItem(this._signs)+" ";
+		// output += getX()+" "+getRandomItem(this._signs)+" ";
+		output += getX();
 	    return output;
 	}
 

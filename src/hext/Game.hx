@@ -571,6 +571,8 @@ class Game
 
 		_scene.addChild(_helpLine = new CommandLine( false ));
 		_playerAction = PlayerAction.ACTION_NONE;
+
+		_scene.addChild(_timebar = new TimeBar());
 		
 		// switchState( STATE_PLAY );
 		switchState( STATE_TITLE );
@@ -775,6 +777,12 @@ class Game
 		// map
 		_gui.setMapVisible( keysDown.exists(openfl.ui.Keyboard.CONTROL) && _state == STATE_PLAY );
 
+		if ( _state == STATE_PLAY )
+		{
+			_timePlayed += delta;
+			_timebar.setRatio( _timePlayed / _GAME_TIME );
+		}		
+
 		if ( _state != STATE_PLAY )
 		{			
 			return;
@@ -838,6 +846,7 @@ class Game
 		}	
 
 		checkGameOverConditions();	
+		checkWinConditions();	
 	}
 	
 	public function getNearestWorkstation(position: Position) : Tile
@@ -997,7 +1006,8 @@ class Game
 	    		playMusic("music/menu_1.mp3");
 	    		setHelp("type \"start\"");
     		case STATE_PLAY:
-	    		playMusic("music/music_1.mp3");				
+	    		playMusic("music/music_1.mp3");		
+	    		_timePlayed = 0;		
 				_helpLine.setContent("Find a computer to fix!");
 	    	case STATE_GAME_OVER:
 	    		playMusic("music/game_over.mp3");
@@ -1036,6 +1046,13 @@ class Game
 			switchState( STATE_GAME_OVER );
 		}
 	}
+	private function checkWinConditions():Void
+	{
+		if ( _timePlayed >= _GAME_TIME )
+		{
+			switchState( STATE_WIN );
+		}
+	}
 
 	private function playMusic(asset:String):Void
 	{
@@ -1051,6 +1068,7 @@ class Game
 	private static var _COLS = 20;
 	
 	public static var _TILE_SIZE = 16;
+	public static var _GAME_TIME:Float = 60;
 
 	public static var instance:Game;
 	
@@ -1067,6 +1085,8 @@ class Game
 	private var _string: String;
 	private var _commandLine: CommandLine;
 	private var _helpLine: CommandLine;
+	private var _timePlayed: Float;
+	private var _timebar: TimeBar;
 	private var _playerAction: PlayerAction;
 	private var _state: GameState;
 	private var _gui: GameGUI;

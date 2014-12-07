@@ -113,6 +113,11 @@ class Tile
 		loadBgSprite();
 		setType(type);		
 	}
+
+	private function reset():Void
+	{
+	    // init / reset game here
+	}
 	
 	public function loadBgSprite()
 	{

@@ -161,7 +161,8 @@ class Tile
 				_broken = false;
 				_corruption = 0;
 				_fgSprite = new AnimatedSprite("img/workstation.png", { w: 16, h: 16 } );
-				_fgSprite.start(500 + Math.random() * 1000);
+				_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
+				_fgSprite.start(5000 + Math.random() * 1000);
 				_updateTimer.start();
 			}
 			case (TileType.User):
@@ -377,6 +378,7 @@ class Tile
 			if (_anger > 100)
 			{
 				setType(TileType.Floor);
+				workstation.refreshFgSprite(); // stops the animation
 				SfxEngine.play("snd/npc_reached_anger_and_left.mp3", false, Game._SFX_VOLUME);
 			}
 		}
@@ -470,7 +472,12 @@ class Tile
 			}
 			else
 			{
-				_fgSprite = new AnimatedSprite("img/workstation.png");
+				_fgSprite = new AnimatedSprite("img/workstation.png", { w: 16, h: 16 } );
+				_fgSprite.setFrame(Math.floor((Math.random() * 10)) % 3);
+				if (Main.game.isUserNearby(_position))
+				{
+					_fgSprite.start(5000 + Math.random() * 10000);
+				}
 			}
 			_fgLayer.addChild(_fgSprite);
 			_bar.setRatio(_corruption / 100);

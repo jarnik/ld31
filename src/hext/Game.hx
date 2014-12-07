@@ -588,6 +588,7 @@ class Game
 	// note - also sets avatar position
 	private function resetTiles()
 	{
+		_timePlayed = 0;
 		var initStr : String = new String("");
 		initStr += "####################,";
 		initStr += "#A      #  a  a  a #,";
@@ -617,6 +618,7 @@ class Game
 	public function initFromString(string: String)
 	{
 		_users = [];
+		_tileLayer.removeChildren();
 		var rows : Array<String> = string.split(",");
 		var popup:Sprite;
 		for (r in 0 ... rows.length)
@@ -625,7 +627,7 @@ class Game
 			{
 				if (_tiles[r][c] != null)
 				{
-					_tileLayer.removeChild(_tiles[r][c].getMasterSprite());
+					//_tileLayer.removeChild(_tiles[r][c].getMasterSprite());
 					popup = _tiles[r][c].getPopupLayer();
 					if (popup != null)
 					{
@@ -1036,8 +1038,7 @@ class Game
 	    		setHelp("type \"start\"");
     		case STATE_PLAY:
     			var musicIndex:Int = Math.floor( Math.random() * (_MUSIC_TRACKS-1) ) + 1;
-	    		playMusic("music/music_"+musicIndex+".mp3");		
-	    		_timePlayed = 0;		
+	    		playMusic("music/music_"+musicIndex+".mp3");			    		
 				_helpLine.setContent("Find a computer to fix!");
 	    	case STATE_GAME_OVER:
 	    		playMusic("music/game_over.mp3");
